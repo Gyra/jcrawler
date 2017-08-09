@@ -16,12 +16,12 @@ def jf(browser):
     browser.get('http://onlinelibrary.wiley.com/journal/10.1111/(ISSN)1540-6261')
     print('Opening: ' + browser.title)
 
-    currentIssue = browser.find_element_by_link_text('December 2016')
+    currentIssue = browser.find_element_by_link_text('October 2017')
     currentIssue.click()
 
     articleList = []
     pdfs = browser.find_elements_by_class_name("tocArticle")
-    for i in range(2, len(pdfs) - 3):
+    for i in range(1, len(pdfs)):
         pdfs = browser.find_elements_by_class_name("tocArticle")
         article = pdfs[i].find_element_by_tag_name("a")
         print('Now downloading article:\n' + article.text)
@@ -41,4 +41,6 @@ def jf(browser):
         os.rename(filename, articleList[-1] + ".pdf")
         browser.back()
 
-    print(articleList)
+    print('Finish updating')
+    browser.quit()
+    return articleList
