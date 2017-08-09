@@ -7,16 +7,24 @@ __auther__ = 'Handing Sun'
 """
 
 import time
-from selenium import webdriver
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
 import os
+from selenium.common.exceptions import NoSuchElementException
 
 
-def jf(browser):
-    os.chdir("/Users/gyra/Dropbox (Personal)/Python/journalSpider/JF")
+def jf(browser, newissue):
+    """
+    This is the function for Journal of Finance
+    :param browser: webdriver object
+    :param newissue: new issue to be downloaded
+    :return: new downloaded articles
+    """
+
     browser.get('http://onlinelibrary.wiley.com/journal/10.1111/(ISSN)1540-6261')
     print('Opening: ' + browser.title)
 
-    currentIssue = browser.find_element_by_link_text('October 2017')
+    currentIssue = browser.find_element_by_link_text(newissue)
     currentIssue.click()
 
     articleList = []
@@ -44,3 +52,7 @@ def jf(browser):
     print('Finish updating')
     browser.quit()
     return articleList
+
+
+def jfnewissue(lastdate):
+    return datetime.strftime(datetime.strptime(lastdate, '%B %Y') + relativedelta(months=2), '%B %Y')
