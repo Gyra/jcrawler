@@ -55,7 +55,7 @@ def jf(browser, newissue):
         print('___________start downloading____________')
         rawname = pdflink.split("/")
         filename = rawname[-2].replace(".", "") + "." + rawname[-1]
-        
+
         while not os.path.isfile(filename):
             time.sleep(2)
 
@@ -106,8 +106,10 @@ def jfe(browser, newissue, downloaddir):
     while not glob('*.zip'):
         time.sleep(5)
 
-    with ZipFile(glob('*.zip'), 'r') as zip_ref:
+    with ZipFile(glob('*.zip')[0], 'r') as zip_ref:
         zip_ref.extractall(downloaddir)
+
+    os.remove(glob('*.zip')[0])
     return articleList
 
 

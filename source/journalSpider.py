@@ -38,7 +38,11 @@ class Spider(object):
             'JF': lambda: spiderFarm.jf(self.browser, spiderFarm.jfnewissue(self.__lastdate__)),
             'JFE': lambda: spiderFarm.jfe(self.browser, spiderFarm.jfenewissue(self.__lastdate__),
                                           self.downloaddir)
-        }.get(self.__journal__, 'Do not have model for this journal yet')()
+        }.get(self.__journal__, ['Do not have model for this journal yet', ])()
+
+    def kill(self):
+        print('Mission completed')
+        self.browser.quit()
 
 if __name__ == '__main__':
     print(os.getcwd())
@@ -52,5 +56,10 @@ if __name__ == '__main__':
     pet = Spider('JFE', Dict['JFE']) ##############TO BE CHANGED####################
     articleList = pet.run()
     print("\n".join(articleList))
+    print({
+        'JF': lambda: spiderFarm.jfnewissue(Dict('JF')),
+        'JFE': lambda: spiderFarm.jfenewissue(Dict('JFE'))
+    }.get('JF')())
+    pet.kill()
 
 
