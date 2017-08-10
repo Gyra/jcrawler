@@ -9,6 +9,7 @@ __auther__ = 'Handing Sun'
 import spiderFarm
 from selenium import webdriver
 import os
+import json
 # import re
 # import time
 # from bs4 import BeautifulSoup as bs
@@ -24,7 +25,8 @@ class Spider(object):
         self.chromeOption = webdriver.ChromeOptions()
         self.downloaddir = {
             'JF': "/Users/gyra/Dropbox (Personal)/Python/journalSpider/JF",
-            'JFE': "/Users/gyra/Dropbox (Personal)/Python/journalSpider/JFE"
+            'JFE': "/Users/gyra/Dropbox (Personal)/Python/journalSpider/JFE",
+            'JFQA': "/Users/gyra/Dropbox (Personal)/Python/journalSpider/JFQA"
         }.get(journal, "/Users/gyra/Dropbox (Personal)/Python/journalSpider/other")
         self.prefs = {"download.default_directory": self.downloaddir,
                       "plugins.plugins_list": [{"enabled": False, "name": "Chrome PDF Viewer"}]}
@@ -37,8 +39,10 @@ class Spider(object):
         return {
             'JF': lambda: spiderFarm.jf(self.browser, spiderFarm.jfnewissue(self.__lastdate__)),
             'JFE': lambda: spiderFarm.jfe(self.browser, spiderFarm.jfenewissue(self.__lastdate__),
-                                          self.downloaddir)
-        }.get(self.__journal__, ['Do not have model for this journal yet', ])()
+                                          self.downloaddir),
+            'JFQA': lambda: spiderFarm.jfqa(self.browser, spiderFarm.jfqanewissue(self.__lastdate__),
+                                            self.downloaddir)
+        }.get(self.__journal__, lambda: print('Do not have model for this journal yet'))()
 
     def kill(self):
         print('Mission completed')
@@ -49,17 +53,19 @@ if __name__ == '__main__':
     journals = []
     lastdates = []
     with open('lastVolume.txt', 'r') as f:
-        for line in f:
-            journals.append(line.split(":")[0].strip())
-            lastdates.append(line.split(":")[1].strip())
-    Dict = dict(zip(journals, lastdates))
-    pet = Spider('JFE', Dict['JFE']) ##############TO BE CHANGED####################
+        Dict = json.load(f)
+
+    pet = Spider('JFQA', Dict['JFQA']) ##############TO BE CHANGED####################
     articleList = pet.run()
     print("\n".join(articleList))
-    print({
+    Dict['JFQA'] = {
         'JF': lambda: spiderFarm.jfnewissue(Dict('JF')),
-        'JFE': lambda: spiderFarm.jfenewissue(Dict('JFE'))
-    }.get('JF')())
+        'JFE': lambda: spiderFarm.jfenewissue(Dict('JFE')),
+        'JFQA': lambda: spiderFarm.jfqanewissue(Dict('JFQA'))
+    }.get('JFQA')()
+    with open('lastVolume.txt', 'w') as f:
+        f.write(json.dumps(Dict))
+
     pet.kill()
 
 
