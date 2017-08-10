@@ -57,7 +57,7 @@ def rfs(browser, newissue, downloaddir):
             print('Finish updating')
             return articleList
         else:
-            print('No volume of RFS: ' + newissue + 'is available')
+            print('No volume of RFS: ' + newissue + ' is available')
             return articleList
     except NoSuchElementException:
         print("Maybe the structure of RFS's web is changed")

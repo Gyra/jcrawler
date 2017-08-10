@@ -2,7 +2,7 @@
 
 """
 This is a spider to get the updated articles from journals, i.e.
-JF, JFE, JFQA, RFS, Econometrica, JASA
+JF, JFE, JFQA, RFS, (Econometrica, JASA)
 
 __auther__ = 'Handing Sun'
 """
@@ -10,10 +10,6 @@ import spiderFarm
 from selenium import webdriver
 import os
 import json
-# import re
-# import time
-# from bs4 import BeautifulSoup as bs
-# import urllib.request
 
 
 class Spider(object):
@@ -21,7 +17,7 @@ class Spider(object):
     The object of web crawler
     """
     def __init__(self, journal, lastdate):
-        # download path setting
+        # download path setting, change following paths to target paths
         self.chromeOption = webdriver.ChromeOptions()
         self.downloaddir = {
             'JF': "/Users/gyra/Dropbox (Personal)/Python/journalSpider/JF",
@@ -49,27 +45,28 @@ class Spider(object):
         }.get(self.__journal__, lambda: print('Do not have model for this journal yet'))()
 
     def kill(self):
-        print('Mission completed')
+        print('Mission completed for: ' + self.__journal__)
         self.browser.quit()
 
 if __name__ == '__main__':
     os.chdir('/Users/gyra/Dropbox (Personal)/Python/journalSpider/jcrawler/source')
     with open('lastVolume.txt', 'r') as f:
         Dict = json.load(f)
+    for journal in Dict:
+        pet = Spider(journal, Dict[journal])
+        articleList = pet.run()
+        if len(articleList) > 0:
+            print("\n".join(articleList))
+            Dict[journal] = {
+                'JF': lambda: spiderFarm.jfnewissue(Dict['JF']),
+                'JFE': lambda: spiderFarm.jfenewissue(Dict['JFE']),
+                'JFQA': lambda: spiderFarm.jfqanewissue(Dict['JFQA']),
+                'RFS': lambda: spiderFarm.rfsnewissue(Dict['RFS'])
+            }.get(journal)()
+            os.chdir('/Users/gyra/Dropbox (Personal)/Python/journalSpider/jcrawler/source')
+            with open('lastVolume.txt', 'w', encoding='utf8') as f:
+                f.write(json.dumps(Dict, f, ensure_ascii=False))
 
-    pet = Spider('RFS', Dict['RFS']) ##############TO BE CHANGED####################
-    articleList = pet.run()
-    print("\n".join(articleList))
-    Dict['RFS'] = {
-        'JF': lambda: spiderFarm.jfnewissue(Dict['JF']),
-        'JFE': lambda: spiderFarm.jfenewissue(Dict['JFE']),
-        'JFQA': lambda: spiderFarm.jfqanewissue(Dict['JFQA']),
-        'RFS': lambda: spiderFarm.rfsnewissue(Dict['RFS'])
-    }.get('RFS')()
-    os.chdir('/Users/gyra/Dropbox (Personal)/Python/journalSpider/jcrawler/source')
-    with open('lastVolume.txt', 'w', encoding='utf8') as f:
-        f.write(json.dumps(Dict, f, ensure_ascii=False))
-
-    pet.kill()
+        pet.kill()
 
 
