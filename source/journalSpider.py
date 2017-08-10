@@ -11,12 +11,8 @@ from selenium import webdriver
 import os
 # import re
 # import time
-# from selenium.webdriver.support.ui import WebDriverWait
-# from selenium.webdriver.common.by import By
-# from selenium.webdriver.support import expected_conditions as EC
 # from bs4 import BeautifulSoup as bs
 # import urllib.request
-urls = ['http://www.sciencedirect.com/science/journal/0304405X']
 
 
 class Spider(object):
@@ -40,7 +36,8 @@ class Spider(object):
     def run(self):
         return {
             'JF': lambda: spiderFarm.jf(self.browser, spiderFarm.jfnewissue(self.__lastdate__)),
-            'JFE': lambda: spiderFarm.jfe(self.browser, spiderFarm.jfenewissue(self.__lastdate__))
+            'JFE': lambda: spiderFarm.jfe(self.browser, spiderFarm.jfenewissue(self.__lastdate__),
+                                          self.downloaddir)
         }.get(self.__journal__, 'Do not have model for this journal yet')()
 
 if __name__ == '__main__':
@@ -52,7 +49,7 @@ if __name__ == '__main__':
             journals.append(line.split(":")[0].strip())
             lastdates.append(line.split(":")[1].strip())
     Dict = dict(zip(journals, lastdates))
-    pet = Spider('JF', Dict['JF'])
+    pet = Spider('JFE', Dict['JFE']) ##############TO BE CHANGED####################
     articleList = pet.run()
     print("\n".join(articleList))
 
