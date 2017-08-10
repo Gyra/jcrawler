@@ -49,9 +49,7 @@ class Spider(object):
         self.browser.quit()
 
 if __name__ == '__main__':
-    print(os.getcwd())
-    journals = []
-    lastdates = []
+    os.chdir('/Users/gyra/Dropbox (Personal)/Python/journalSpider/jcrawler/source')
     with open('lastVolume.txt', 'r') as f:
         Dict = json.load(f)
 
@@ -59,12 +57,13 @@ if __name__ == '__main__':
     articleList = pet.run()
     print("\n".join(articleList))
     Dict['JFQA'] = {
-        'JF': lambda: spiderFarm.jfnewissue(Dict('JF')),
-        'JFE': lambda: spiderFarm.jfenewissue(Dict('JFE')),
-        'JFQA': lambda: spiderFarm.jfqanewissue(Dict('JFQA'))
+        'JF': lambda: spiderFarm.jfnewissue(Dict['JF']),
+        'JFE': lambda: spiderFarm.jfenewissue(Dict['JFE']),
+        'JFQA': lambda: spiderFarm.jfqanewissue(Dict['JFQA'])
     }.get('JFQA')()
-    with open('lastVolume.txt', 'w') as f:
-        f.write(json.dumps(Dict))
+    os.chdir('/Users/gyra/Dropbox (Personal)/Python/journalSpider/jcrawler/source')
+    with open('lastVolume.txt', 'w', encoding='utf8') as f:
+        f.write(json.dumps(Dict, f, ensure_ascii=False))
 
     pet.kill()
 

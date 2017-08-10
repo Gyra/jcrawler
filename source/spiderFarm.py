@@ -37,12 +37,14 @@ def jfqa(browser, newissue, downloaddir):
             os.chdir(downloaddir)
             articleList = list(map(lambda x: x.text, browser.find_elements_by_class_name('part-link')))
             browser.find_element_by_xpath('//*[@id="follow"]/form/a[1]').click()
+            time.sleep(1)
             browser.find_element_by_xpath('//*[@id="downloadSelectedProductParts"]').click()
-            WebDriverWait(browser, 15).until(
+            time.sleep(2)
+            WebDriverWait(browser, 25).until(
                 EC.presence_of_element_located((By.XPATH, '//*[@id="confirm-modal"]/div/div[3]/div[2]/a'))).click()
 
             while not glob('*.zip'):
-                time.sleep(5)
+                time.sleep(2)
 
             with ZipFile(glob('*.zip')[0], 'r') as zip_ref:
                 zip_ref.extractall(downloaddir)
@@ -50,7 +52,7 @@ def jfqa(browser, newissue, downloaddir):
             os.remove(glob('*.zip')[0])
             return articleList
         else:
-            print('No volume of JFQA: ', + newissue + ' is available')
+            print('No volume of JFQA: ' + newissue + ' is available')
             return articleList
     except NoSuchElementException:
         print("Maybe the structure of JFQA's web is changed")
@@ -89,6 +91,7 @@ def jf(browser, newissue):
                 print('Now downloading article:\n' + article.text)
                 articleList.append(article.text)
                 article.click()
+                time.sleep(1)
                 pdflinks = browser.find_elements_by_class_name("js-article-section__pdf-container-link")
                 pdflink = pdflinks[1].get_attribute("href")
                 browser.get(pdflink)
@@ -101,6 +104,7 @@ def jf(browser, newissue):
 
                 os.rename(filename, articleList[-1] + ".pdf")
                 browser.back()
+                time.sleep(1)
 
             print('Finish updating')
             browser.quit()
@@ -138,9 +142,10 @@ def jfe(browser, newissue, downloaddir):
         currentIssue = browser.find_element_by_xpath('//*[@id="volumeIssueData"]/ol/li[3]/ol/li[1]/div[1]/span[1]')
         if newissue == currentIssue.text:
             browser.find_element_by_xpath('//*[@id="multiPdfIcon"]').click()
-
+            time.sleep(1)
             os.chdir(downloaddir)
-            WebDriverWait(browser, 15).until(EC.presence_of_element_located((By.XPATH, '//*[@id="ddm"]'))).click()
+            WebDriverWait(browser, 20).until(EC.presence_of_element_located((By.XPATH, '//*[@id="ddm"]'))).click()
+            time.sleep(1)
             articleList = list(map(lambda x: x.text, WebDriverWait(browser, 15).until(
                 EC.presence_of_all_elements_located((By.CLASS_NAME, 'fileName')))))
 
