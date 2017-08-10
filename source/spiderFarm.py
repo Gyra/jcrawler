@@ -18,6 +18,60 @@ from zipfile import ZipFile
 from glob import glob
 
 
+def rfs(browser, newissue, downloaddir):
+    """
+    This is the function for The Review of Financial Studies
+    :param browser: webdriver object
+    :param downloaddir: directory for new articles
+    :param newissue: new issue to be download
+    :return: new download articles
+    """
+
+    browser.get('https://academic.oup.com/rfs/issue')
+    print('Opening: ' + browser.title)
+
+    articleList = []
+    try:
+        currentIssue = browser.find_element_by_xpath('//*[@id="InfoColumn"]/div/div[1]/div[2]/div[2]')
+        if newissue == currentIssue.text:
+            os.chdir(downloaddir)
+            pdfs = browser.find_elements_by_class_name('item-title')
+            for i in range(len(pdfs)):
+                pdfs = browser.find_elements_by_class_name('item-title')
+                article = pdfs[i].find_element_by_tag_name('a')
+                print('Now downloading article:\n' + article.text)
+                articleList.append(article.text)
+                article.click()
+                time.sleep(1)
+                pdflink = browser.find_element_by_class_name('article-pdfLink').get_attribute('href')
+                browser.get(pdflink)
+                filename = pdflink.split('/')[-1]
+
+                while not os.path.isfile(filename):
+                    time.sleep(2)
+
+                os.rename(filename, articleList[-1] + '.pdf')
+                browser.back()
+                time.sleep(1)
+
+            print('Finish updating')
+            return articleList
+        else:
+            print('No volume of RFS: ' + newissue + 'is available')
+            return articleList
+    except NoSuchElementException:
+        print("Maybe the structure of RFS's web is changed")
+        return articleList
+
+
+def rfsnewissue(lastdate):
+    """
+    :param lastdate: i.e. July 2017
+    :return: i.e. Auguest 2017
+    """
+    return datetime.strftime(datetime.strptime(lastdate, '%B %Y') + relativedelta(months=1), '%B %Y')
+
+
 def jfqa(browser, newissue, downloaddir):
     """
     This is the function for Journal of Financial Quantitative Analysis
@@ -67,11 +121,12 @@ def jfqanewissue(lastdate):
     return datetime.strftime(datetime.strptime(lastdate, '%B %Y') + relativedelta(months=2), '%B %Y')
 
 
-def jf(browser, newissue):
+def jf(browser, newissue, downloaddir):
     """
     This is the function for Journal of Finance
     :param browser: webdriver object
     :param newissue: new issue to be downloaded
+    :param downloaddir: directory for new articles
     :return: new downloaded articles
     """
 
@@ -84,8 +139,9 @@ def jf(browser, newissue):
         if newissue == currentIssue.text:
             currentIssue.click()
 
+            os.chdir(downloaddir)
             pdfs = browser.find_elements_by_class_name("tocArticle")
-            for i in range(1, len(pdfs)):
+            for i in range(len(pdfs)):
                 pdfs = browser.find_elements_by_class_name("tocArticle")
                 article = pdfs[i].find_element_by_tag_name("a")
                 print('Now downloading article:\n' + article.text)
@@ -107,7 +163,6 @@ def jf(browser, newissue):
                 time.sleep(1)
 
             print('Finish updating')
-            browser.quit()
             return articleList
         else:
             print('No volume of JF: ' + newissue + ' is available')

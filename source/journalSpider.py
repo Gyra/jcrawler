@@ -26,7 +26,8 @@ class Spider(object):
         self.downloaddir = {
             'JF': "/Users/gyra/Dropbox (Personal)/Python/journalSpider/JF",
             'JFE': "/Users/gyra/Dropbox (Personal)/Python/journalSpider/JFE",
-            'JFQA': "/Users/gyra/Dropbox (Personal)/Python/journalSpider/JFQA"
+            'JFQA': "/Users/gyra/Dropbox (Personal)/Python/journalSpider/JFQA",
+            'RFS': "/Users/gyra/Dropbox (Personal)/Python/journalSpider/RFS"
         }.get(journal, "/Users/gyra/Dropbox (Personal)/Python/journalSpider/other")
         self.prefs = {"download.default_directory": self.downloaddir,
                       "plugins.plugins_list": [{"enabled": False, "name": "Chrome PDF Viewer"}]}
@@ -37,11 +38,14 @@ class Spider(object):
 
     def run(self):
         return {
-            'JF': lambda: spiderFarm.jf(self.browser, spiderFarm.jfnewissue(self.__lastdate__)),
+            'JF': lambda: spiderFarm.jf(self.browser, spiderFarm.jfnewissue(self.__lastdate__),
+                                        self.downloaddir),
             'JFE': lambda: spiderFarm.jfe(self.browser, spiderFarm.jfenewissue(self.__lastdate__),
                                           self.downloaddir),
             'JFQA': lambda: spiderFarm.jfqa(self.browser, spiderFarm.jfqanewissue(self.__lastdate__),
-                                            self.downloaddir)
+                                            self.downloaddir),
+            'RFS': lambda: spiderFarm.rfs(self.browser, spiderFarm.rfsnewissue(self.__lastdate__),
+                                          self.downloaddir)
         }.get(self.__journal__, lambda: print('Do not have model for this journal yet'))()
 
     def kill(self):
@@ -53,14 +57,15 @@ if __name__ == '__main__':
     with open('lastVolume.txt', 'r') as f:
         Dict = json.load(f)
 
-    pet = Spider('JFQA', Dict['JFQA']) ##############TO BE CHANGED####################
+    pet = Spider('RFS', Dict['RFS']) ##############TO BE CHANGED####################
     articleList = pet.run()
     print("\n".join(articleList))
-    Dict['JFQA'] = {
+    Dict['RFS'] = {
         'JF': lambda: spiderFarm.jfnewissue(Dict['JF']),
         'JFE': lambda: spiderFarm.jfenewissue(Dict['JFE']),
-        'JFQA': lambda: spiderFarm.jfqanewissue(Dict['JFQA'])
-    }.get('JFQA')()
+        'JFQA': lambda: spiderFarm.jfqanewissue(Dict['JFQA']),
+        'RFS': lambda: spiderFarm.rfsnewissue(Dict['RFS'])
+    }.get('RFS')()
     os.chdir('/Users/gyra/Dropbox (Personal)/Python/journalSpider/jcrawler/source')
     with open('lastVolume.txt', 'w', encoding='utf8') as f:
         f.write(json.dumps(Dict, f, ensure_ascii=False))
