@@ -58,14 +58,15 @@ def rfs(browser, newissue, downloaddir):
     try:
         currentIssue = browser.find_element_by_xpath('//*[@id="InfoColumn"]/div/div[1]/div[2]/div[2]')
         if newissue == currentIssue.text:
-            return loader(browser, downloaddir)
+            return loader(browser, downloaddir), True
         else:
-            msg = 'No volume of The Review of Financial Studies: ' + newissue + ' is available\n' \
-                                                    'Do you want' + currentIssue.text + 'type: true/false'
+            msg = 'No volume of The Review of Financial Studies: ' \
+                  '' + newissue + ' is available\n' \
+                                  'Do you want current available issue: ' + currentIssue.text + '? Enter: true/false: '
             if {'true': True, 'false': False, 'yes': True, 'no': False}[input(msg).lower().strip()]:
-                return loader(browser, downloaddir)
+                return loader(browser, downloaddir), False
             else:
-                return articleList
+                return articleList, False
     except:
         print("Maybe the structure of RFS's web is changed")
         return articleList
@@ -88,7 +89,7 @@ def jfqa(browser, newissue, downloaddir):
     :return: new downloaded articles
     """
 
-    def loader(browder, downloaddir):
+    def loader(browser, downloaddir):
         os.chdir(downloaddir)
         articleList = list(map(lambda x: x.text, browser.find_elements_by_class_name('part-link')))
         browser.find_element_by_xpath('//*[@id="follow"]/form/a[1]').click()
@@ -114,14 +115,15 @@ def jfqa(browser, newissue, downloaddir):
     try:
         currentIssue = browser.find_element_by_xpath('//*[@id="maincontent"]/div/div[1]/div[1]/div/div[1]/h2/span[2]')
         if newissue == currentIssue.text:
-            return loader(browser, downloaddir)
+            return loader(browser, downloaddir), True
         else:
             msg = 'No volume of Journal of Financial Quantitative Analysis: ' \
-                  '' + newissue + ' is available\nDo you want' + currentIssue.text + 'enter true or false'
+                  '' + newissue + ' is available\nDo you want current available issue: ' \
+                                  '' + currentIssue.text + '? Enter true or false: '
             if {'true': True, 'false': False, 'yes': True, 'no': False}[input(msg).lower().strip()]:
-                return loader(browser, downloaddir)
+                return loader(browser, downloaddir), False
             else:
-                return articleList
+                return articleList, False
     except:
         print("Maybe the structure of JFQA's web is changed")
         return articleList
@@ -180,14 +182,15 @@ def jf(browser, newissue, downloaddir):
     try:
         currentIssue = browser.find_element_by_xpath('//*[@id="recentIssues"]/div[2]/ul/li[1]/p[1]/a')
         if newissue == currentIssue.text:
-            return loader(browser, currentIssue, downloaddir)
+            return loader(browser, currentIssue, downloaddir), True
         else:
-            msg = 'No volume of Journal of Finance: ' + newissue + ' is available\n' \
-                                                    'Do you want' + currentIssue.text + 'type: true/false'
+            msg = 'No volume of Journal of Finance: ' \
+                  '' + newissue + ' is available\nDo you want current available issue: ' \
+                                  '' + currentIssue.text + '? Enter: true/false: '
             if {'true': True, 'false': False, 'yes': True, 'no': False}[input(msg).lower().strip()]:
-                return loader(browser, currentIssue, downloaddir)
+                return loader(browser, currentIssue, downloaddir), False
             else:
-                return articleList
+                return articleList, False
     except:
         print("Maybe the structure of JF's web is changed")
         return articleList
@@ -235,14 +238,15 @@ def jfe(browser, newissue, downloaddir):
     try:
         currentIssue = browser.find_element_by_xpath('//*[@id="volumeIssueData"]/ol/li[3]/ol/li[1]/div[1]/span[1]')
         if newissue == currentIssue.text:
-            return loader(browser, downloaddir)
+            return loader(browser, downloaddir), True
         else:
             msg = 'No volume of Journal of Financial Econometrics: ' \
-                  '' + newissue + ' is available\nDo you want' + currentIssue.text + 'enter true or false'
+                  '' + newissue + ' is available\nDo you want current available issue: ' \
+                                  '' + currentIssue.text + '? Enter true or false: '
             if {'true': True, 'false': False, 'yes': True, 'no': False}[input(msg).lower().strip()]:
-                return loader(browser, downloaddir)
+                return loader(browser, downloaddir), False
             else:
-                return articleList
+                return articleList, False
     except:
         print("Maybe the structure of JFE's web is changed")
         return articleList
@@ -255,7 +259,7 @@ def jfenewissue(lastdate):
     """
     volume = int(lastdate.split(',')[0].strip().split(' ')[1])
     issue = int(lastdate.split(',')[1].strip().split(' ')[1])
-    if issue <= 3:
+    if issue < 3:
         issue = issue + 1
     else:
         volume = volume + 1

@@ -1,1 +1,1 @@
-{"JF": "June 2017", "RFS": "August 2017", "JFQA": "June 2017", "JFE": "Volume 125, Issue 2"}
+{"JFQA": "June 2017", "RFS": "August 2017", "JFE": "Volume 125, Issue 2", "JF": "June 2017"}
