@@ -10,12 +10,12 @@ import time
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 import os
-from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from zipfile import ZipFile
 from glob import glob
+# from selenium.common.exceptions import NoSuchElementException
 
 
 def rfs(browser, newissue, downloaddir):
@@ -60,13 +60,13 @@ def rfs(browser, newissue, downloaddir):
         if newissue == currentIssue.text:
             return loader(browser, downloaddir)
         else:
-            if {'true': True, 'false': False, 'yes': True, 'no': False}[input(
-                                    'No volume of RFS: ' + newissue + ' is available\n'
-                                                                      'Do you want' + currentIssue.text + 'type: true/false').lower().strip()]:
+            msg = 'No volume of The Review of Financial Studies: ' + newissue + ' is available\n' \
+                                                    'Do you want' + currentIssue.text + 'type: true/false'
+            if {'true': True, 'false': False, 'yes': True, 'no': False}[input(msg).lower().strip()]:
                 return loader(browser, downloaddir)
             else:
                 return articleList
-    except NoSuchElementException:
+    except:
         print("Maybe the structure of RFS's web is changed")
         return articleList
 
@@ -88,6 +88,25 @@ def jfqa(browser, newissue, downloaddir):
     :return: new downloaded articles
     """
 
+    def loader(browder, downloaddir):
+        os.chdir(downloaddir)
+        articleList = list(map(lambda x: x.text, browser.find_elements_by_class_name('part-link')))
+        browser.find_element_by_xpath('//*[@id="follow"]/form/a[1]').click()
+        time.sleep(1)
+        browser.find_element_by_xpath('//*[@id="downloadSelectedProductParts"]').click()
+        time.sleep(2)
+        WebDriverWait(browser, 25).until(
+            EC.presence_of_element_located((By.XPATH, '//*[@id="confirm-modal"]/div/div[3]/div[2]/a'))).click()
+
+        while not glob('*.zip'):
+            time.sleep(2)
+
+        with ZipFile(glob('*.zip')[0], 'r') as zip_ref:
+            zip_ref.extractall(downloaddir)
+
+        os.remove(glob('*.zip')[0])
+        return articleList
+
     browser.get('https://www.cambridge.org/core/journals/journal-of-financial-and-quantitative-analysis/latest-issue')
     print('Opentng: ' + browser.title)
 
@@ -95,27 +114,15 @@ def jfqa(browser, newissue, downloaddir):
     try:
         currentIssue = browser.find_element_by_xpath('//*[@id="maincontent"]/div/div[1]/div[1]/div/div[1]/h2/span[2]')
         if newissue == currentIssue.text:
-            os.chdir(downloaddir)
-            articleList = list(map(lambda x: x.text, browser.find_elements_by_class_name('part-link')))
-            browser.find_element_by_xpath('//*[@id="follow"]/form/a[1]').click()
-            time.sleep(1)
-            browser.find_element_by_xpath('//*[@id="downloadSelectedProductParts"]').click()
-            time.sleep(2)
-            WebDriverWait(browser, 25).until(
-                EC.presence_of_element_located((By.XPATH, '//*[@id="confirm-modal"]/div/div[3]/div[2]/a'))).click()
-
-            while not glob('*.zip'):
-                time.sleep(2)
-
-            with ZipFile(glob('*.zip')[0], 'r') as zip_ref:
-                zip_ref.extractall(downloaddir)
-
-            os.remove(glob('*.zip')[0])
-            return articleList
+            return loader(browser, downloaddir)
         else:
-            print('No volume of JFQA: ' + newissue + ' is available')
-            return articleList
-    except NoSuchElementException:
+            msg = 'No volume of Journal of Financial Quantitative Analysis: ' \
+                  '' + newissue + ' is available\nDo you want' + currentIssue.text + 'enter true or false'
+            if {'true': True, 'false': False, 'yes': True, 'no': False}[input(msg).lower().strip()]:
+                return loader(browser, downloaddir)
+            else:
+                return articleList
+    except:
         print("Maybe the structure of JFQA's web is changed")
         return articleList
 
@@ -137,6 +144,35 @@ def jf(browser, newissue, downloaddir):
     :return: new downloaded articles
     """
 
+    def loader(browser, currentIssue, downloaddir):
+        currentIssue.click()
+
+        os.chdir(downloaddir)
+        pdfs = browser.find_elements_by_class_name("tocArticle")
+        for i in range(len(pdfs)):
+            pdfs = browser.find_elements_by_class_name("tocArticle")
+            article = pdfs[i].find_element_by_tag_name("a")
+            print('Now downloading article:\n' + article.text)
+            articleList.append(article.text)
+            article.click()
+            time.sleep(1)
+            pdflinks = browser.find_elements_by_class_name("js-article-section__pdf-container-link")
+            pdflink = pdflinks[1].get_attribute("href")
+            browser.get(pdflink)
+            print('___________start downloading____________')
+            rawname = pdflink.split("/")
+            filename = rawname[-2].replace(".", "") + "." + rawname[-1]
+
+            while not os.path.isfile(filename):
+                time.sleep(2)
+
+            os.rename(filename, articleList[-1] + ".pdf")
+            browser.back()
+            time.sleep(1)
+
+        print('Finish updating')
+        return articleList
+
     browser.get('http://onlinelibrary.wiley.com/journal/10.1111/(ISSN)1540-6261')
     print('Opening: ' + browser.title)
 
@@ -144,37 +180,15 @@ def jf(browser, newissue, downloaddir):
     try:
         currentIssue = browser.find_element_by_xpath('//*[@id="recentIssues"]/div[2]/ul/li[1]/p[1]/a')
         if newissue == currentIssue.text:
-            currentIssue.click()
-
-            os.chdir(downloaddir)
-            pdfs = browser.find_elements_by_class_name("tocArticle")
-            for i in range(len(pdfs)):
-                pdfs = browser.find_elements_by_class_name("tocArticle")
-                article = pdfs[i].find_element_by_tag_name("a")
-                print('Now downloading article:\n' + article.text)
-                articleList.append(article.text)
-                article.click()
-                time.sleep(1)
-                pdflinks = browser.find_elements_by_class_name("js-article-section__pdf-container-link")
-                pdflink = pdflinks[1].get_attribute("href")
-                browser.get(pdflink)
-                print('___________start downloading____________')
-                rawname = pdflink.split("/")
-                filename = rawname[-2].replace(".", "") + "." + rawname[-1]
-
-                while not os.path.isfile(filename):
-                    time.sleep(2)
-
-                os.rename(filename, articleList[-1] + ".pdf")
-                browser.back()
-                time.sleep(1)
-
-            print('Finish updating')
-            return articleList
+            return loader(browser, currentIssue, downloaddir)
         else:
-            print('No volume of JF: ' + newissue + ' is available')
-            return articleList
-    except NoSuchElementException:
+            msg = 'No volume of Journal of Finance: ' + newissue + ' is available\n' \
+                                                    'Do you want' + currentIssue.text + 'type: true/false'
+            if {'true': True, 'false': False, 'yes': True, 'no': False}[input(msg).lower().strip()]:
+                return loader(browser, currentIssue, downloaddir)
+            else:
+                return articleList
+    except:
         print("Maybe the structure of JF's web is changed")
         return articleList
 
@@ -196,6 +210,24 @@ def jfe(browser, newissue, downloaddir):
     :return: new downloaded articles
     """
 
+    def loader(browser, downloaddir):
+        browser.find_element_by_xpath('//*[@id="multiPdfIcon"]').click()
+        time.sleep(1)
+        os.chdir(downloaddir)
+        WebDriverWait(browser, 20).until(EC.presence_of_element_located((By.XPATH, '//*[@id="ddm"]'))).click()
+        time.sleep(1)
+        articleList = list(map(lambda x: x.text, WebDriverWait(browser, 15).until(
+            EC.presence_of_all_elements_located((By.CLASS_NAME, 'fileName')))))
+
+        while not glob('*.zip'):
+            time.sleep(5)
+
+        with ZipFile(glob('*.zip')[0], 'r') as zip_ref:
+            zip_ref.extractall(downloaddir)
+
+        os.remove(glob('*.zip')[0])
+        return articleList
+
     browser.get('http://www.sciencedirect.com/science/journal/0304405X')
     print('Opening: ' + browser.title)
 
@@ -203,26 +235,15 @@ def jfe(browser, newissue, downloaddir):
     try:
         currentIssue = browser.find_element_by_xpath('//*[@id="volumeIssueData"]/ol/li[3]/ol/li[1]/div[1]/span[1]')
         if newissue == currentIssue.text:
-            browser.find_element_by_xpath('//*[@id="multiPdfIcon"]').click()
-            time.sleep(1)
-            os.chdir(downloaddir)
-            WebDriverWait(browser, 20).until(EC.presence_of_element_located((By.XPATH, '//*[@id="ddm"]'))).click()
-            time.sleep(1)
-            articleList = list(map(lambda x: x.text, WebDriverWait(browser, 15).until(
-                EC.presence_of_all_elements_located((By.CLASS_NAME, 'fileName')))))
-
-            while not glob('*.zip'):
-                time.sleep(5)
-
-            with ZipFile(glob('*.zip')[0], 'r') as zip_ref:
-                zip_ref.extractall(downloaddir)
-
-            os.remove(glob('*.zip')[0])
-            return articleList
+            return loader(browser, downloaddir)
         else:
-            print('No volume of JFE: ' + newissue + ' is available')
-            return articleList
-    except NoSuchElementException:
+            msg = 'No volume of Journal of Financial Econometrics: ' \
+                  '' + newissue + ' is available\nDo you want' + currentIssue.text + 'enter true or false'
+            if {'true': True, 'false': False, 'yes': True, 'no': False}[input(msg).lower().strip()]:
+                return loader(browser, downloaddir)
+            else:
+                return articleList
+    except:
         print("Maybe the structure of JFE's web is changed")
         return articleList
 
