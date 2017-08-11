@@ -49,7 +49,8 @@ class Spider(object):
         self.browser.quit()
 
 if __name__ == '__main__':
-    os.chdir('/Users/gyra/Dropbox (Personal)/Python/journalSpider/jcrawler/source')
+    sourcedir = '/Users/gyra/Dropbox (Personal)/Python/journalSpider/jcrawler/source'
+    os.chdir(sourcedir)
     with open('lastVolume.txt', 'r') as f:
         Dict = json.load(f)
     for fjournal in Dict:
@@ -64,7 +65,7 @@ if __name__ == '__main__':
                     'JFQA': lambda: spiderFarm.jfqanewissue(Dict['JFQA']),
                     'RFS': lambda: spiderFarm.rfsnewissue(Dict['RFS'])
                 }.get(fjournal)()
-                os.chdir('/Users/gyra/Dropbox (Personal)/Python/journalSpider/jcrawler/source')
+                os.chdir(sourcedir)
                 with open('lastVolume.txt', 'w', encoding='utf8') as f:
                     f.write(json.dumps(Dict, f, ensure_ascii=False))
 
