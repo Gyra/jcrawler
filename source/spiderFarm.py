@@ -27,6 +27,30 @@ def rfs(browser, newissue, downloaddir):
     :return: new download articles
     """
 
+    def loader(browser, downloaddir):
+        os.chdir(downloaddir)
+        pdfs = browser.find_elements_by_class_name('item-title')
+        for i in range(len(pdfs)):
+            pdfs = browser.find_elements_by_class_name('item-title')
+            article = pdfs[i].find_element_by_tag_name('a')
+            print('Now downloading article:\n' + article.text)
+            articleList.append(article.text)
+            article.click()
+            time.sleep(1)
+            pdflink = browser.find_element_by_class_name('article-pdfLink').get_attribute('href')
+            browser.get(pdflink)
+            filename = pdflink.split('/')[-1]
+
+            while not os.path.isfile(filename):
+                time.sleep(2)
+
+            os.rename(filename, articleList[-1] + '.pdf')
+            browser.back()
+            time.sleep(1)
+
+        print('Finish updating')
+        return articleList
+
     browser.get('https://academic.oup.com/rfs/issue')
     print('Opening: ' + browser.title)
 
@@ -34,31 +58,14 @@ def rfs(browser, newissue, downloaddir):
     try:
         currentIssue = browser.find_element_by_xpath('//*[@id="InfoColumn"]/div/div[1]/div[2]/div[2]')
         if newissue == currentIssue.text:
-            os.chdir(downloaddir)
-            pdfs = browser.find_elements_by_class_name('item-title')
-            for i in range(len(pdfs)):
-                pdfs = browser.find_elements_by_class_name('item-title')
-                article = pdfs[i].find_element_by_tag_name('a')
-                print('Now downloading article:\n' + article.text)
-                articleList.append(article.text)
-                article.click()
-                time.sleep(1)
-                pdflink = browser.find_element_by_class_name('article-pdfLink').get_attribute('href')
-                browser.get(pdflink)
-                filename = pdflink.split('/')[-1]
-
-                while not os.path.isfile(filename):
-                    time.sleep(2)
-
-                os.rename(filename, articleList[-1] + '.pdf')
-                browser.back()
-                time.sleep(1)
-
-            print('Finish updating')
-            return articleList
+            return loader(browser, downloaddir)
         else:
-            print('No volume of RFS: ' + newissue + ' is available')
-            return articleList
+            if {'true': True, 'false': False, 'yes': True, 'no': False}[input(
+                                    'No volume of RFS: ' + newissue + ' is available\n'
+                                                                      'Do you want' + currentIssue.text + 'type: true/false').lower().strip()]:
+                return loader(browser, downloaddir)
+            else:
+                return articleList
     except NoSuchElementException:
         print("Maybe the structure of RFS's web is changed")
         return articleList
