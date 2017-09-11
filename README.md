@@ -21,5 +21,4 @@ pdf有四个路径，还有一个源文件路径要改成本地的
 UPDATE: 
 Adding the option that allows to download the current issue when no new issue is available
 
-***
-【其实我是在试github怎么用啊哈哈哈
+Apate to new RFS downloaded filename change
