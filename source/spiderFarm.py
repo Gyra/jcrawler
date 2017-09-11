@@ -41,10 +41,14 @@ def rfs(browser, newissue, downloaddir):
             browser.get(pdflink)
             filename = pdflink.split('/')[-1]
 
-            while not os.path.isfile(filename):
+            while not os.path.isfile(filename) and not os.path.isfile('watermark.pdf'):
                 time.sleep(2)
 
-            os.rename(filename, articleList[-1] + '.pdf')
+            if os.path.isfile(filename):
+                os.rename(filename, articleList[-1] + '.pdf')
+            elif os.path.isfile('watermark.pdf'):
+                os.rename('watermark.pdf', articleList[-1] + '.pdf')
+                
             browser.back()
             time.sleep(1)
 
