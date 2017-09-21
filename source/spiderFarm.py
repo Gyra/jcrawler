@@ -48,7 +48,7 @@ def rfs(browser, newissue, downloaddir):
                 os.rename(filename, articleList[-1] + '.pdf')
             elif os.path.isfile('watermark.pdf'):
                 os.rename('watermark.pdf', articleList[-1] + '.pdf')
-                
+
             browser.back()
             time.sleep(1)
 
